@@ -1,0 +1,76 @@
+{
+  "result_id": "sample-result-blocked-001",
+  "schema_version": "0.1",
+  "contract_id": "research-contract-001",
+  "status": "blocked",
+  "executed_agents": [
+    {
+      "agent_id": "research_planner",
+      "status": "blocked"
+    },
+    {
+      "agent_id": "evidence_reviewer",
+      "status": "blocked"
+    }
+  ],
+  "tool_calls": [
+    {
+      "tool_id": "source_reader",
+      "status": "blocked"
+    },
+    {
+      "tool_id": "citation_tracker",
+      "status": "blocked"
+    },
+    {
+      "tool_id": "artifact_writer",
+      "status": "blocked"
+    }
+  ],
+  "evidence_collected": [
+    "source_list",
+    "claim_to_source_map",
+    "risk_register"
+  ],
+  "gate_results": [
+    {
+      "gate_id": "source_gate",
+      "status": "blocked",
+      "evidence": [
+        "source_list"
+      ],
+      "details": "Claim-to-source mapping was incomplete, so execution stopped at the source gate."
+    },
+    {
+      "gate_id": "decision_packet_gate",
+      "status": "blocked",
+      "evidence": [
+        "risk_register"
+      ],
+      "details": "Decision packet release remained blocked because the source gate did not pass."
+    }
+  ],
+  "artifacts": [
+    {
+      "artifact_id": "research_plan",
+      "status": "produced"
+    },
+    {
+      "artifact_id": "evidence_matrix",
+      "status": "blocked"
+    },
+    {
+      "artifact_id": "decision_packet",
+      "status": "blocked"
+    }
+  ],
+  "verification_results": {
+    "no_fake_success": true,
+    "no_silent_fallback": true,
+    "explicit_failure_state": true
+  },
+  "failure_state": "blocked_missing_claim_to_source_map",
+  "risk_notes": [
+    "Blocked result documents the missing evidence instead of silently falling back."
+  ]
+}

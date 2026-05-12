@@ -22,6 +22,16 @@ python3 scripts/specx_cli.py verify ./specx.contract.json
 
 Failure returns `ok=false`, `failure_state`, and structured `details`.
 
+## specx verify-result
+
+Verify an execution result against the governing contract:
+
+```bash
+python3 scripts/specx_cli.py verify-result ./specx.execution_result.json --contract ./specx.contract.json
+```
+
+`verify-result` checks the execution result schema, contract id, expected artifacts, gate results, verification checks, and failure-state semantics. A complete `failed` or `blocked` result can pass protocol verification while still reporting `execution_status: failed` or `execution_status: blocked`.
+
 ## Other Commands
 
 ```bash

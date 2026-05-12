@@ -1,6 +1,6 @@
 {
   "name": "specx-codex-plugin",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Universal spec-driven agent governance and execution contract runtime for Codex.",
   "license": "MIT",
   "author": {
@@ -29,8 +29,8 @@
     "websiteURL": "https://github.com/BTCNAI/specx-codex-plugin",
     "defaultPrompt": [
       "Use SpecX init to create a governed v0.1 contract.",
-      "Use SpecX verify to fail closed on missing gates, evidence, or failure semantics.",
-      "Use SpecX to explain the execution contract before workflow execution."
+      "Use SpecX verify-result to check execution evidence against a contract.",
+      "Use SpecX verify to fail closed on missing gates, evidence, or failure semantics."
     ],
     "brandColor": "#2563EB"
   },

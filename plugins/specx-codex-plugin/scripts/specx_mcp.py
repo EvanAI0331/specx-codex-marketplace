@@ -17,6 +17,7 @@ from scripts.specx_cli import (
     init_contract,
     validate_contract,
     verify_contract,
+    verify_execution_result,
 )
 
 
@@ -59,6 +60,13 @@ def build_server() -> FastMCP:
     )
     def specx_verify(contract: dict[str, Any]) -> dict[str, Any]:
         return verify_contract(contract)
+
+    @server.tool(
+        name="specx.verify_result",
+        description="Verify a SpecX execution_result v0.1 against its governing contract.",
+    )
+    def specx_verify_result(execution_result: dict[str, Any], contract: dict[str, Any]) -> dict[str, Any]:
+        return verify_execution_result(execution_result, contract)
 
     @server.tool(
         name="specx.explain",

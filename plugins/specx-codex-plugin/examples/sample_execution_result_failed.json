@@ -1,0 +1,77 @@
+{
+  "result_id": "sample-result-failed-001",
+  "schema_version": "0.1",
+  "contract_id": "research-contract-001",
+  "status": "failed",
+  "executed_agents": [
+    {
+      "agent_id": "research_planner",
+      "status": "passed"
+    },
+    {
+      "agent_id": "evidence_reviewer",
+      "status": "failed"
+    }
+  ],
+  "tool_calls": [
+    {
+      "tool_id": "source_reader",
+      "status": "passed"
+    },
+    {
+      "tool_id": "citation_tracker",
+      "status": "failed"
+    },
+    {
+      "tool_id": "artifact_writer",
+      "status": "blocked"
+    }
+  ],
+  "evidence_collected": [
+    "source_list",
+    "claim_to_source_map",
+    "risk_register"
+  ],
+  "gate_results": [
+    {
+      "gate_id": "source_gate",
+      "status": "passed",
+      "evidence": [
+        "source_list",
+        "claim_to_source_map"
+      ],
+      "details": "Sources were listed and mapped to material claims."
+    },
+    {
+      "gate_id": "decision_packet_gate",
+      "status": "failed",
+      "evidence": [
+        "risk_register"
+      ],
+      "details": "Citation tracking failed before the decision packet could be verified."
+    }
+  ],
+  "artifacts": [
+    {
+      "artifact_id": "research_plan",
+      "status": "produced"
+    },
+    {
+      "artifact_id": "evidence_matrix",
+      "status": "produced"
+    },
+    {
+      "artifact_id": "decision_packet",
+      "status": "failed"
+    }
+  ],
+  "verification_results": {
+    "no_fake_success": true,
+    "no_silent_fallback": true,
+    "explicit_failure_state": true
+  },
+  "failure_state": "failed_citation_tracker",
+  "risk_notes": [
+    "Failed result remains explicit and must not be presented as a successful workflow."
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "result_id": "sample-result-passed-001",
+  "schema_version": "0.1",
+  "contract_id": "research-contract-001",
+  "status": "passed",
+  "executed_agents": [
+    {
+      "agent_id": "research_planner",
+      "status": "passed"
+    },
+    {
+      "agent_id": "evidence_reviewer",
+      "status": "passed"
+    }
+  ],
+  "tool_calls": [
+    {
+      "tool_id": "source_reader",
+      "status": "passed"
+    },
+    {
+      "tool_id": "citation_tracker",
+      "status": "passed"
+    },
+    {
+      "tool_id": "artifact_writer",
+      "status": "passed"
+    }
+  ],
+  "evidence_collected": [
+    "source_list",
+    "claim_to_source_map",
+    "risk_register"
+  ],
+  "gate_results": [
+    {
+      "gate_id": "source_gate",
+      "status": "passed",
+      "evidence": [
+        "source_list",
+        "claim_to_source_map"
+      ],
+      "details": "Sources were listed and mapped to material claims."
+    },
+    {
+      "gate_id": "decision_packet_gate",
+      "status": "passed",
+      "evidence": [
+        "risk_register",
+        "decision_packet"
+      ],
+      "details": "Decision packet includes evidence, risks, and unsupported-claim handling."
+    }
+  ],
+  "artifacts": [
+    {
+      "artifact_id": "research_plan",
+      "status": "produced"
+    },
+    {
+      "artifact_id": "evidence_matrix",
+      "status": "produced"
+    },
+    {
+      "artifact_id": "decision_packet",
+      "status": "produced"
+    }
+  ],
+  "verification_results": {
+    "no_fake_success": true,
+    "no_silent_fallback": true,
+    "explicit_failure_state": true
+  },
+  "failure_state": null,
+  "risk_notes": [
+    "Sample result is protocol validation data, not evidence of a real external workflow execution."
+  ]
+}

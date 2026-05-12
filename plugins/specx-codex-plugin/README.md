@@ -17,7 +17,7 @@ codex plugin marketplace add BTCNAI/specx-codex-marketplace
 Or pin the stable release:
 
 ```bash
-codex plugin marketplace add https://github.com/BTCNAI/specx-codex-marketplace.git --ref v0.3.0
+codex plugin marketplace add https://github.com/BTCNAI/specx-codex-marketplace.git --ref v0.4.0
 ```
 
 ## What It Provides
@@ -46,6 +46,7 @@ python3 scripts/specx_cli.py init --template research --output ./specx.contract.
 python3 scripts/specx_cli.py init --template software_refactor --output ./specx.contract.json
 python3 scripts/specx_cli.py init --template content_pipeline --output ./specx.contract.json
 python3 scripts/specx_cli.py verify ./specx.contract.json
+python3 scripts/specx_cli.py verify-result ./specx.execution_result.json --contract ./specx.contract.json
 python3 scripts/specx_cli.py validate examples/demo_software_engineering_contract.json
 python3 scripts/specx_cli.py compile examples/demo_software_engineering_contract.json
 python3 scripts/specx_cli.py explain examples/demo_software_engineering_contract.json
@@ -56,6 +57,7 @@ Included MCP tools:
 - `specx.validate`
 - `specx.compile`
 - `specx.verify`
+- `specx.verify_result`
 - `specx.explain`
 - `specx.init`
 
@@ -88,6 +90,18 @@ Each gate must include `gate_id`, `condition`, `on_pass`, and `on_failure`. `fai
 
 If required evidence, tools, specs, gates, artifacts, or verification policy are missing, the workflow must return `ok=false` with `failure_state` and `details`. It must not claim success.
 
+## Execution Result Shape
+
+Contracts are pre-execution constraints. Execution results are post-execution acceptance records.
+
+`verify-result` checks that a result has matching `contract_id`, gate results for every contract gate, artifacts for every expected artifact, explicit status, failure semantics checks, and correct `failure_state` behavior.
+
+Execution statuses:
+
+- `passed`: every required gate and artifact is present; `failure_state` must be null or empty.
+- `failed`: execution failed; `failure_state` must be explicit.
+- `blocked`: execution stopped before completion; `failure_state` must be explicit.
+
 ## Demos
 
 Demo 1: Software engineering
@@ -116,6 +130,7 @@ Demo 3: Multi-agent system
 - `docs/comparison.md`
 - `docs/mcp-tools.md`
 - `docs/contract-schema-v0.1.md`
+- `docs/execution-result-v0.1.md`
 - `docs/cli.md`
 
 ## Roadmap
@@ -123,6 +138,7 @@ Demo 3: Multi-agent system
 P0:
 
 - Contract schema v0.1 adoption feedback.
+- Execution result adoption feedback.
 - MCP integration tests against real Codex marketplace install.
 
 P1:

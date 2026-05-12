@@ -1,0 +1,36 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: python3 -m pip install -r requirements.txt pytest
+      - name: Run tests
+        run: python3 -m pytest
+      - name: Validate contract
+        run: python3 scripts/specx_cli.py validate templates/research.contract.json
+      - name: Compile contract
+        run: python3 scripts/specx_cli.py compile templates/research.contract.json
+      - name: Verify contract
+        run: python3 scripts/specx_cli.py verify templates/research.contract.json
+      - name: Verify passed execution result
+        run: python3 scripts/specx_cli.py verify-result examples/sample_execution_result_passed.json --contract templates/research.contract.json
+      - name: Verify failed execution result semantics
+        run: |
+          python3 scripts/specx_cli.py verify-result examples/sample_execution_result_failed.json --contract templates/research.contract.json > /tmp/specx_failed_result.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          payload = json.loads(Path("/tmp/specx_failed_result.json").read_text())
+          assert payload["ok"] is True
+          assert payload["result"]["execution_status"] == "failed"
+          PY

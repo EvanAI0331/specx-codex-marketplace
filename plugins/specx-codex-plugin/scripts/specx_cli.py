@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""SpecX CLI for contract initialization, validation, compilation, verification, and explanation."""
+"""SpecX CLI for SpecX contract and execution-result governance."""
 
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_VERSION = "0.1"
+EXECUTION_RESULT_SCHEMA_VERSION = "0.1"
 TEMPLATE_NAMES = ("research", "software_refactor", "content_pipeline")
 TEMPLATE_FILES = {
     "research": ROOT / "templates" / "research.contract.json",
@@ -52,6 +53,27 @@ REQUIRED_EXECUTION_CONSTRAINTS = [
     "no_fake_success",
     "no_silent_fallback",
     "no_hardcoded_fallback",
+]
+REQUIRED_EXECUTION_RESULT_FIELDS = [
+    "result_id",
+    "schema_version",
+    "contract_id",
+    "status",
+    "executed_agents",
+    "tool_calls",
+    "evidence_collected",
+    "gate_results",
+    "artifacts",
+    "verification_results",
+    "failure_state",
+    "risk_notes",
+]
+EXECUTION_RESULT_STATUSES = {"passed", "failed", "blocked"}
+REQUIRED_GATE_RESULT_FIELDS = ["gate_id", "status", "evidence", "details"]
+REQUIRED_RESULT_CHECKS = [
+    "no_fake_success",
+    "no_silent_fallback",
+    "explicit_failure_state",
 ]
 
 
@@ -94,6 +116,21 @@ def empty_governance_details() -> dict[str, Any]:
         "invalid_verification_policy": [],
         "invalid_execution_constraints": [],
         "invalid_types": [],
+    }
+
+
+def empty_result_details() -> dict[str, Any]:
+    return {
+        "missing_fields": [],
+        "invalid_types": [],
+        "invalid_status": [],
+        "invalid_gate_results": [],
+        "missing_gate_results": [],
+        "invalid_artifacts": [],
+        "missing_artifacts": [],
+        "invalid_verification_results": [],
+        "contract_mismatch": [],
+        "invalid_failure_state": [],
     }
 
 
@@ -178,6 +215,159 @@ def governance_details(contract: dict[str, Any]) -> dict[str, Any]:
 
 def has_errors(details: dict[str, Any]) -> bool:
     return any(bool(value) for value in details.values())
+
+
+def item_id(item: Any, preferred_keys: tuple[str, ...]) -> str | None:
+    if isinstance(item, str):
+        return item
+    if isinstance(item, dict):
+        for key in preferred_keys:
+            value = item.get(key)
+            if isinstance(value, str) and value:
+                return value
+    return None
+
+
+def result_details(result: dict[str, Any], contract: dict[str, Any]) -> dict[str, Any]:
+    details = empty_result_details()
+
+    for field in REQUIRED_EXECUTION_RESULT_FIELDS:
+        if field not in result:
+            details["missing_fields"].append(field)
+
+    if result.get("schema_version") != EXECUTION_RESULT_SCHEMA_VERSION:
+        details["invalid_types"].append(
+            {
+                "field": "schema_version",
+                "expected": EXECUTION_RESULT_SCHEMA_VERSION,
+                "actual": result.get("schema_version"),
+            }
+        )
+
+    if result.get("contract_id") != contract.get("contract_id"):
+        details["contract_mismatch"].append(
+            {
+                "field": "contract_id",
+                "expected": contract.get("contract_id"),
+                "actual": result.get("contract_id"),
+            }
+        )
+
+    status = result.get("status")
+    if status not in EXECUTION_RESULT_STATUSES:
+        details["invalid_status"].append(
+            {"field": "status", "expected": sorted(EXECUTION_RESULT_STATUSES), "actual": status}
+        )
+
+    for field in (
+        "executed_agents",
+        "tool_calls",
+        "evidence_collected",
+        "gate_results",
+        "artifacts",
+        "risk_notes",
+    ):
+        if field in result and not isinstance(result[field], list):
+            details["invalid_types"].append(
+                {"field": field, "expected": "array", "actual": type(result[field]).__name__}
+            )
+
+    if "verification_results" in result and not isinstance(result["verification_results"], dict):
+        details["invalid_types"].append(
+            {
+                "field": "verification_results",
+                "expected": "object",
+                "actual": type(result["verification_results"]).__name__,
+            }
+        )
+
+    failure_state = result.get("failure_state")
+    if status == "passed" and failure_state not in (None, ""):
+        details["invalid_failure_state"].append(
+            {"status": status, "expected": "empty or null", "actual": failure_state}
+        )
+    if status in {"failed", "blocked"} and not failure_state:
+        details["invalid_failure_state"].append(
+            {"status": status, "expected": "non-empty failure_state", "actual": failure_state}
+        )
+
+    expected_gate_ids = [
+        item_id(gate, ("gate_id",)) for gate in contract.get("gates", []) if item_id(gate, ("gate_id",))
+    ]
+    seen_gate_ids = set()
+    gate_results = result.get("gate_results")
+    if isinstance(gate_results, list):
+        for index, gate_result in enumerate(gate_results):
+            if not isinstance(gate_result, dict):
+                details["invalid_gate_results"].append(
+                    {"gate_result_index": index, "error": "gate_result must be an object"}
+                )
+                continue
+            missing = [field for field in REQUIRED_GATE_RESULT_FIELDS if field not in gate_result]
+            if missing:
+                details["invalid_gate_results"].append(
+                    {"gate_result_index": index, "missing_fields": missing}
+                )
+            gate_id = gate_result.get("gate_id")
+            if gate_id:
+                seen_gate_ids.add(gate_id)
+            if gate_result.get("status") not in EXECUTION_RESULT_STATUSES:
+                details["invalid_gate_results"].append(
+                    {
+                        "gate_result_index": index,
+                        "field": "status",
+                        "expected": sorted(EXECUTION_RESULT_STATUSES),
+                        "actual": gate_result.get("status"),
+                    }
+                )
+            if status == "passed" and gate_result.get("status") != "passed":
+                details["invalid_gate_results"].append(
+                    {
+                        "gate_id": gate_id,
+                        "error": "passed execution_result cannot contain non-passed gate_result",
+                    }
+                )
+    missing_gate_ids = sorted(set(expected_gate_ids) - seen_gate_ids)
+    if missing_gate_ids:
+        details["missing_gate_results"].extend(missing_gate_ids)
+
+    expected_artifact_ids = {
+        artifact_id
+        for artifact_id in (
+            item_id(artifact, ("artifact_id", "id", "name"))
+            for artifact in contract.get("expected_artifacts", [])
+        )
+        if artifact_id
+    }
+    artifact_ids = set()
+    artifacts = result.get("artifacts")
+    if isinstance(artifacts, list):
+        for index, artifact in enumerate(artifacts):
+            artifact_id = item_id(artifact, ("artifact_id", "id", "name"))
+            if artifact_id is None:
+                details["invalid_artifacts"].append(
+                    {"artifact_index": index, "error": "artifact must have artifact_id/id/name or be a string"}
+                )
+                continue
+            artifact_ids.add(artifact_id)
+    missing_artifacts = sorted(expected_artifact_ids - artifact_ids)
+    if missing_artifacts:
+        details["missing_artifacts"].extend(missing_artifacts)
+
+    verification_results = result.get("verification_results")
+    if isinstance(verification_results, dict):
+        for check in REQUIRED_RESULT_CHECKS:
+            value = verification_results.get(check)
+            if value is not True:
+                details["invalid_verification_results"].append(
+                    {"field": check, "expected": True, "actual": value}
+                )
+    elif "verification_results" in result:
+        details["invalid_verification_results"].append(
+            {"error": "verification_results must be an object"}
+        )
+
+    return details
 
 
 def validate_contract(contract: dict[str, Any]) -> dict[str, Any]:
@@ -289,6 +479,30 @@ def init_contract(template: str, output: str | Path) -> dict[str, Any]:
     )
 
 
+def verify_execution_result(execution_result: dict[str, Any], contract: dict[str, Any]) -> dict[str, Any]:
+    contract_verification = verify_contract(contract)
+    if not contract_verification["ok"]:
+        return fail(
+            "Contract verification failed before execution_result verification.",
+            "failed_contract_verification",
+            {"contract_details": contract_verification["details"]},
+        )
+
+    details = result_details(execution_result, contract)
+    if has_errors(details):
+        return fail("Execution result verification failed.", "failed_execution_result_verification", details)
+
+    return ok(
+        {
+            "result_id": execution_result["result_id"],
+            "contract_id": execution_result["contract_id"],
+            "schema_version": execution_result["schema_version"],
+            "execution_status": execution_result["status"],
+            "status": "verified",
+        }
+    )
+
+
 def run(command: str, path: str | Path) -> dict[str, Any]:
     contract, error = load_json(path)
     if error:
@@ -304,6 +518,16 @@ def run(command: str, path: str | Path) -> dict[str, Any]:
     return fail("Unsupported command.", "failed_unsupported_command", {"command": command})
 
 
+def run_verify_result(result_path: str | Path, contract_path: str | Path) -> dict[str, Any]:
+    execution_result, result_error = load_json(result_path)
+    if result_error:
+        return result_error
+    contract, contract_error = load_json(contract_path)
+    if contract_error:
+        return contract_error
+    return verify_execution_result(execution_result, contract)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="SpecX contract CLI")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -316,6 +540,13 @@ def build_parser() -> argparse.ArgumentParser:
         command_parser = subparsers.add_parser(command)
         command_parser.add_argument("path")
 
+    verify_result_parser = subparsers.add_parser(
+        "verify-result",
+        help="Verify a SpecX execution_result v0.1 against a SpecX contract",
+    )
+    verify_result_parser.add_argument("path")
+    verify_result_parser.add_argument("--contract", required=True)
+
     return parser
 
 
@@ -324,6 +555,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.command == "init":
         response = init_contract(args.template, args.output)
+    elif args.command == "verify-result":
+        response = run_verify_result(args.path, args.contract)
     else:
         response = run(args.command, args.path)
     print(json.dumps(response, indent=2, sort_keys=True))

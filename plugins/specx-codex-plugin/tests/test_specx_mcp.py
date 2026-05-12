@@ -13,6 +13,7 @@ if str(ROOT) not in sys.path:
 from scripts.specx_mcp import build_server
 
 VALID = ROOT / "templates" / "research.contract.json"
+PASSED_RESULT = ROOT / "examples" / "sample_execution_result_passed.json"
 
 
 def run(coro):
@@ -36,6 +37,7 @@ class SpecXMcpTests(unittest.TestCase):
                 "specx.validate",
                 "specx.compile",
                 "specx.verify",
+                "specx.verify_result",
                 "specx.explain",
                 "specx.init",
             },
@@ -87,6 +89,37 @@ class SpecXMcpTests(unittest.TestCase):
         payload = tool_payload(run(server.call_tool("specx.verify", {"contract": contract})))
         self.assertFalse(payload["ok"])
         self.assertIn("required_agents", payload["details"]["missing_fields"])
+
+    def test_mcp_verify_result_works(self):
+        server = build_server()
+        contract = json.loads(VALID.read_text(encoding="utf-8"))
+        execution_result = json.loads(PASSED_RESULT.read_text(encoding="utf-8"))
+        payload = tool_payload(
+            run(
+                server.call_tool(
+                    "specx.verify_result",
+                    {"execution_result": execution_result, "contract": contract},
+                )
+            )
+        )
+        self.assertTrue(payload["ok"])
+        self.assertEqual(payload["result"]["execution_status"], "passed")
+
+    def test_mcp_verify_result_fails_closed_on_missing_gate(self):
+        server = build_server()
+        contract = json.loads(VALID.read_text(encoding="utf-8"))
+        execution_result = json.loads(PASSED_RESULT.read_text(encoding="utf-8"))
+        execution_result["gate_results"] = []
+        payload = tool_payload(
+            run(
+                server.call_tool(
+                    "specx.verify_result",
+                    {"execution_result": execution_result, "contract": contract},
+                )
+            )
+        )
+        self.assertFalse(payload["ok"])
+        self.assertTrue(payload["details"]["missing_gate_results"])
 
 
 if __name__ == "__main__":

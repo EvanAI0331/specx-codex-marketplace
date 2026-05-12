@@ -5,6 +5,7 @@ SpecX exposes four MCP tools:
 - `specx.validate`
 - `specx.compile`
 - `specx.verify`
+- `specx.verify_result`
 - `specx.explain`
 - `specx.init`
 
@@ -52,6 +53,10 @@ Compiles a valid contract into a governed execution plan with agents, tools, evi
 ### specx.verify
 
 Fails closed when gates, expected artifacts, required agents, required tools, or `no_fake_success` / `no_silent_fallback` constraints are missing.
+
+### specx.verify_result
+
+Verifies a SpecX execution result against its governing contract. It checks `contract_id`, gate coverage, artifact coverage, verification checks, and status/failure-state semantics.
 
 ### specx.init
 

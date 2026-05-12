@@ -11,7 +11,7 @@ codex plugin marketplace add BTCNAI/specx-codex-marketplace
 Pinned install:
 
 ```bash
-codex plugin marketplace add https://github.com/BTCNAI/specx-codex-marketplace.git --ref v0.3.0
+codex plugin marketplace add https://github.com/BTCNAI/specx-codex-marketplace.git --ref v0.4.0
 ```
 
 ## Initialize A Contract
@@ -32,6 +32,12 @@ python3 scripts/specx_cli.py init --template content_pipeline --output ./specx.c
 
 ```bash
 python3 scripts/specx_cli.py verify ./specx.contract.json
+```
+
+## Verify An Execution Result
+
+```bash
+python3 scripts/specx_cli.py verify-result examples/sample_execution_result_passed.json --contract templates/research.contract.json
 ```
 
 Expected success:
@@ -70,6 +76,7 @@ The current main branch exposes MCP tools:
 - `specx.validate`
 - `specx.compile`
 - `specx.verify`
+- `specx.verify_result`
 - `specx.explain`
 
 See `docs/mcp-tools.md`.

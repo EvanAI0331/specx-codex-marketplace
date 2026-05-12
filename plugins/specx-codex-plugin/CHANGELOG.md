@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.0
+
+- Added Execution Result Schema v0.1 at `schemas/specx_execution_result_v0_1.schema.json`.
+- Added `specx verify-result` to verify execution results against their governing contract.
+- Added MCP `specx.verify_result` with the same implementation as CLI `verify-result`.
+- Added passed, failed, and blocked execution-result samples.
+- Added GitHub Actions CI for pytest, contract validation, compilation, verification, and result verification.
+- Added tests for execution-result schema and fail-closed result verification.
+
 ## 0.3.0
 
 - Added Contract Schema v0.1 at `schemas/specx_contract_v0_1.schema.json`.
