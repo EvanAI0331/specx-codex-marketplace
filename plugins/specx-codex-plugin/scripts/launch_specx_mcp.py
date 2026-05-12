@@ -1,29 +1,30 @@
 #!/usr/bin/env python3
-"""SpecX MCP launcher placeholder with fail-closed behavior."""
+"""Launch the SpecX MCP server over stdio."""
+
+from __future__ import annotations
 
 import sys
+from pathlib import Path
 
 
-TODO = [
-    "specx.validate",
-    "specx.compile",
-    "specx.verify",
-    "specx.explain",
-]
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 
-def main():
+def main() -> int:
     try:
-        import mcp  # noqa: F401
-    except ImportError:
+        from scripts.specx_mcp import main as run_mcp
+    except ImportError as exc:
         print(
-            "MCP SDK not installed. Use scripts/specx_cli.py directly or install MCP runtime.",
+            "SpecX MCP server cannot start because the MCP runtime is missing or invalid. "
+            "Install dependencies from requirements.txt and retry.",
             file=sys.stderr,
         )
-        print("TODO: " + ", ".join(TODO), file=sys.stderr)
+        print(str(exc), file=sys.stderr)
         return 2
-    print("SpecX MCP runtime integration is TODO: " + ", ".join(TODO), file=sys.stderr)
-    return 3
+    run_mcp()
+    return 0
 
 
 if __name__ == "__main__":

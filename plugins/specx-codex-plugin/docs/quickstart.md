@@ -11,10 +11,16 @@ codex plugin marketplace add BTCNAI/specx-codex-marketplace
 Pinned install:
 
 ```bash
-codex plugin marketplace add https://github.com/BTCNAI/specx-codex-marketplace.git --ref v0.1.0
+codex plugin marketplace add https://github.com/BTCNAI/specx-codex-marketplace.git --ref v0.2.2
 ```
 
 ## Validate A Contract
+
+Install MCP runtime dependencies before using MCP tools:
+
+```bash
+python3 -m pip install -r requirements.txt
+```
 
 ```bash
 python3 scripts/specx_cli.py validate examples/demo_software_engineering_contract.json
@@ -50,9 +56,11 @@ Verification fails closed when gates, required agents, artifacts, failure semant
 
 ## Current Boundary
 
-`v0.1.0` is skills + CLI. MCP tools are planned next:
+The current main branch exposes MCP tools:
 
 - `specx.validate`
 - `specx.compile`
 - `specx.verify`
 - `specx.explain`
+
+See `docs/mcp-tools.md`.

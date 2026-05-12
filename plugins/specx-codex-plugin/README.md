@@ -17,7 +17,7 @@ codex plugin marketplace add BTCNAI/specx-codex-marketplace
 Or pin the stable release:
 
 ```bash
-codex plugin marketplace add https://github.com/BTCNAI/specx-codex-marketplace.git --ref v0.1.0
+codex plugin marketplace add https://github.com/BTCNAI/specx-codex-marketplace.git --ref v0.2.2
 ```
 
 ## What It Provides
@@ -28,9 +28,9 @@ codex plugin marketplace add https://github.com/BTCNAI/specx-codex-marketplace.g
 - Artifact contracts and explicit failure states.
 - Fail-closed verification for fake success and silent fallback.
 
-## Current Release
+## Current Shape
 
-Version `v0.1.0` is a skills + CLI release.
+The current main branch provides skills + CLI + MCP tools.
 
 Included skills:
 
@@ -46,6 +46,19 @@ python3 scripts/specx_cli.py validate examples/demo_software_engineering_contrac
 python3 scripts/specx_cli.py compile examples/demo_software_engineering_contract.json
 python3 scripts/specx_cli.py verify examples/demo_software_engineering_contract.json
 python3 scripts/specx_cli.py explain examples/demo_software_engineering_contract.json
+```
+
+Included MCP tools:
+
+- `specx.validate`
+- `specx.compile`
+- `specx.verify`
+- `specx.explain`
+
+Install MCP runtime dependencies before running MCP tools:
+
+```bash
+python3 -m pip install -r requirements.txt
 ```
 
 ## Contract Shape
@@ -89,24 +102,21 @@ Demo 3: Multi-agent system
 - `docs/contract-format.md`
 - `docs/use-cases.md`
 - `docs/comparison.md`
+- `docs/mcp-tools.md`
 
 ## Roadmap
 
 P0:
 
-- Real MCP server.
-- Contract schema v0.1.
-- `specx.validate`
-- `specx.compile`
-- `specx.verify`
-- `specx.explain`
+- Contract schema v0.1 hardening.
+- MCP integration tests against real Codex marketplace install.
 
 P1:
 
 - `specx init`
 - `specx verify`
 
-The next release target is skills + CLI + MCP tools.
+The next release target is a tagged MCP release after install testing.
 
 ## Repository Structure
 
@@ -121,7 +131,9 @@ specx-codex-plugin/
 ├── tests/
 ├── README.md
 ├── marketplace.json
-└── LICENSE
+├── LICENSE
+├── requirements.txt
+└── .mcp.json
 ```
 
 ## Failure Policy

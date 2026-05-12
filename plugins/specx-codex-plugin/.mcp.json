@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "specx": {
+      "command": "python3",
+      "args": [
+        "./scripts/launch_specx_mcp.py"
+      ]
+    }
+  }
+}
