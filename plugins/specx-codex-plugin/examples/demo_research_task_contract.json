@@ -1,74 +1,80 @@
 {
   "contract_id": "demo-research-task-001",
-  "version": "0.1.0",
-  "objective": "Research a market and produce an evidence-bound decision packet.",
-  "domain": "market-research",
-  "task_type": "research-decision-packet",
+  "domain": "research",
+  "execution_constraints": {
+    "evidence_required_for_claims": true,
+    "no_fake_success": true,
+    "no_hardcoded_fallback": true,
+    "no_silent_fallback": true
+  },
+  "expected_artifacts": [
+    "research_plan",
+    "evidence_matrix",
+    "decision_packet"
+  ],
+  "failure_semantics": {
+    "explicit_failure_state": true,
+    "no_fake_success": true,
+    "no_silent_fallback": true,
+    "on_gate_failure": "blocked",
+    "on_missing_evidence": "blocked",
+    "on_tool_failure": "failed"
+  },
+  "gates": [
+    {
+      "condition": "Sources are listed and mapped to material claims.",
+      "gate_id": "source_gate",
+      "on_failure": "blocked_missing_sources",
+      "on_pass": "continue_to_analysis"
+    },
+    {
+      "condition": "Decision packet includes evidence, risks, and unsupported claims.",
+      "gate_id": "decision_packet_gate",
+      "on_failure": "blocked_incomplete_decision_packet",
+      "on_pass": "release_decision_packet"
+    }
+  ],
+  "human_approval": {
+    "before": [
+      "final_decision_release"
+    ],
+    "required": true
+  },
+  "objective": "Research a question and produce an evidence-bound decision packet.",
   "required_agents": [
     {
       "agent_id": "research_planner",
-      "role_spec": "Define research scope, source criteria, decision questions, and risk categories.",
-      "execution_spec": "Create a source plan before collecting evidence and block if source requirements are unclear.",
-      "output_spec": "Research plan with scope, source criteria, required evidence, and acceptance gates."
+      "execution_spec": "Create a source plan before evidence collection and block when the scope is incomplete.",
+      "output_spec": "Research plan with scope, source criteria, evidence requirements, and acceptance gates.",
+      "role_spec": "Define research scope, source criteria, and decision questions."
     },
     {
-      "agent_id": "evidence_analyst",
-      "role_spec": "Analyze only collected evidence and separate supported claims from unsupported claims.",
-      "execution_spec": "Map each major claim to a source, produce risk notes, and mark gaps explicitly.",
-      "output_spec": "Evidence matrix, decision packet, source map, and risk notes."
+      "agent_id": "evidence_reviewer",
+      "execution_spec": "Map material claims to evidence and fail closed when evidence is missing.",
+      "output_spec": "Evidence matrix, unsupported claim list, risk notes, and decision packet.",
+      "role_spec": "Review claims against collected evidence and identify unsupported claims."
     }
-  ],
-  "required_tools": [
-    "web_research",
-    "citation_tracker",
-    "artifact_writer"
   ],
   "required_evidence": [
     "source_list",
     "claim_to_source_map",
-    "risk_register",
-    "decision_packet"
+    "risk_register"
   ],
-  "gates": [
-    {
-      "gate_id": "source_quality_gate",
-      "condition": "Sources are relevant, cited, and mapped to claims.",
-      "on_failure": "blocked_missing_sources"
-    },
-    {
-      "gate_id": "evidence_gate",
-      "condition": "Every material claim has supporting evidence or is marked unsupported.",
-      "on_failure": "blocked_unsupported_claims"
-    },
-    {
-      "gate_id": "decision_packet_gate",
-      "condition": "Decision packet includes recommendation, evidence, risks, and alternatives.",
-      "on_failure": "blocked_incomplete_decision_packet"
-    }
+  "required_tools": [
+    "source_reader",
+    "citation_tracker",
+    "artifact_writer"
   ],
-  "expected_artifacts": [
-    "research_plan",
-    "evidence_matrix",
-    "decision_packet",
-    "risk_notes"
-  ],
-  "failure_semantics": {
-    "on_missing_evidence": "blocked",
-    "on_source_failure": "failed",
-    "on_gate_failure": "blocked",
-    "on_unsupported_claim": "unsupported"
-  },
-  "execution_constraints": {
-    "no_fake_success": true,
-    "no_silent_fallback": true,
-    "no_hardcoded_fallback": true,
-    "evidence_required_for_claims": true
-  },
-  "human_approval": {
-    "required": true,
-    "before": [
-      "final_decision_release"
+  "schema_version": "0.1",
+  "task_type": "evidence-bound-research",
+  "unsupported_features": [],
+  "verification_policy": {
+    "required_checks": [
+      "schema_v0_1",
+      "required_fields",
+      "gate_shape",
+      "failure_semantics",
+      "evidence_mapping"
     ]
-  },
-  "unsupported_features": []
+  }
 }

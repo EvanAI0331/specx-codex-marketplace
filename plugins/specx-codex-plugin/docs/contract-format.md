@@ -5,7 +5,7 @@ A SpecX contract is the execution boundary for an agent workflow.
 ## Required Fields
 
 - `contract_id`
-- `version`
+- `schema_version`
 - `objective`
 - `domain`
 - `task_type`
@@ -16,6 +16,8 @@ A SpecX contract is the execution boundary for an agent workflow.
 - `expected_artifacts`
 - `failure_semantics`
 - `execution_constraints`
+- `human_approval`
+- `verification_policy`
 
 ## Agent Specs
 
@@ -34,11 +36,18 @@ Each gate must define:
 
 - `gate_id`
 - `condition`
+- `on_pass`
 - `on_failure`
 
 Gate failure must return `blocked` or `failed`. It must not be converted into success.
 
 ## Failure Semantics
+
+`failure_semantics` must include:
+
+- `no_fake_success: true`
+- `no_silent_fallback: true`
+- `explicit_failure_state: true`
 
 Use explicit states:
 
@@ -59,3 +68,7 @@ Use explicit states:
 ```
 
 Missing constraints should fail verification.
+
+## Verification Policy
+
+`verification_policy.required_checks` must be a non-empty array. Missing checks fail closed.

@@ -1,0 +1,80 @@
+{
+  "contract_id": "research-contract-001",
+  "schema_version": "0.1",
+  "objective": "Research a question and produce an evidence-bound decision packet.",
+  "domain": "research",
+  "task_type": "evidence-bound-research",
+  "required_agents": [
+    {
+      "agent_id": "research_planner",
+      "role_spec": "Define research scope, source criteria, and decision questions.",
+      "execution_spec": "Create a source plan before evidence collection and block when the scope is incomplete.",
+      "output_spec": "Research plan with scope, source criteria, evidence requirements, and acceptance gates."
+    },
+    {
+      "agent_id": "evidence_reviewer",
+      "role_spec": "Review claims against collected evidence and identify unsupported claims.",
+      "execution_spec": "Map material claims to evidence and fail closed when evidence is missing.",
+      "output_spec": "Evidence matrix, unsupported claim list, risk notes, and decision packet."
+    }
+  ],
+  "required_tools": [
+    "source_reader",
+    "citation_tracker",
+    "artifact_writer"
+  ],
+  "required_evidence": [
+    "source_list",
+    "claim_to_source_map",
+    "risk_register"
+  ],
+  "gates": [
+    {
+      "gate_id": "source_gate",
+      "condition": "Sources are listed and mapped to material claims.",
+      "on_pass": "continue_to_analysis",
+      "on_failure": "blocked_missing_sources"
+    },
+    {
+      "gate_id": "decision_packet_gate",
+      "condition": "Decision packet includes evidence, risks, and unsupported claims.",
+      "on_pass": "release_decision_packet",
+      "on_failure": "blocked_incomplete_decision_packet"
+    }
+  ],
+  "expected_artifacts": [
+    "research_plan",
+    "evidence_matrix",
+    "decision_packet"
+  ],
+  "failure_semantics": {
+    "no_fake_success": true,
+    "no_silent_fallback": true,
+    "explicit_failure_state": true,
+    "on_missing_evidence": "blocked",
+    "on_gate_failure": "blocked",
+    "on_tool_failure": "failed"
+  },
+  "execution_constraints": {
+    "no_fake_success": true,
+    "no_silent_fallback": true,
+    "no_hardcoded_fallback": true,
+    "evidence_required_for_claims": true
+  },
+  "human_approval": {
+    "required": true,
+    "before": [
+      "final_decision_release"
+    ]
+  },
+  "verification_policy": {
+    "required_checks": [
+      "schema_v0_1",
+      "required_fields",
+      "gate_shape",
+      "failure_semantics",
+      "evidence_mapping"
+    ]
+  },
+  "unsupported_features": []
+}

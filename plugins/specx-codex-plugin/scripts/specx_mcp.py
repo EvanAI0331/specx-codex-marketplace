@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""MCP tools for SpecX contract validation, compilation, verification, and explanation."""
+"""MCP tools for SpecX contract initialization, validation, compilation, verification, and explanation."""
 
 from __future__ import annotations
 
@@ -11,7 +11,13 @@ try:
 except ImportError as exc:  # pragma: no cover - exercised by launcher in missing-runtime envs
     raise ImportError("Install the MCP SDK with `python3 -m pip install -r requirements.txt`.") from exc
 
-from scripts.specx_cli import compile_contract, explain_contract, validate_contract, verify_contract
+from scripts.specx_cli import (
+    compile_contract,
+    explain_contract,
+    init_contract,
+    validate_contract,
+    verify_contract,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -21,10 +27,17 @@ def build_server() -> FastMCP:
     server = FastMCP(
         "specx-codex-plugin",
         instructions=(
-            "SpecX validates, compiles, verifies, and explains governed execution "
+            "SpecX initializes, validates, compiles, verifies, and explains governed execution "
             "contracts for Codex agent workflows."
         ),
     )
+
+    @server.tool(
+        name="specx.init",
+        description="Create a verified SpecX v0.1 contract from a built-in template.",
+    )
+    def specx_init(template: str, output: str) -> dict[str, Any]:
+        return init_contract(template, output)
 
     @server.tool(
         name="specx.validate",

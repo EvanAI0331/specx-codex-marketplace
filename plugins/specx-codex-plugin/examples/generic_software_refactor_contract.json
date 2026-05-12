@@ -1,64 +1,78 @@
 {
   "contract_id": "generic-refactor-001",
-  "version": "0.1.0",
-  "objective": "Refactor a software module without changing public behavior.",
   "domain": "software-engineering",
-  "task_type": "behavior-preserving-refactor",
-  "required_agents": [
-    {
-      "agent_id": "refactor_planner",
-      "role_spec": "Identify behavior boundaries and change scope.",
-      "execution_spec": "Prepare a refactor plan before edits.",
-      "output_spec": "Scoped plan with risk notes."
-    },
-    {
-      "agent_id": "verification_reviewer",
-      "role_spec": "Verify behavior preservation using tests and evidence.",
-      "execution_spec": "Compare before and after observable behavior.",
-      "output_spec": "Verification report."
-    }
-  ],
-  "required_tools": [
-    "source_reader",
-    "test_runner",
-    "diff_inspector"
-  ],
-  "required_evidence": [
-    "public_behavior_inventory",
-    "test_results",
-    "diff_summary"
-  ],
-  "gates": [
-    {
-      "gate_id": "scope_gate",
-      "condition": "Public behavior boundaries are listed before edits.",
-      "on_failure": "block_with_missing_scope"
-    },
-    {
-      "gate_id": "verification_gate",
-      "condition": "Tests or equivalent checks pass after refactor.",
-      "on_failure": "block_with_failed_verification"
-    }
-  ],
+  "execution_constraints": {
+    "no_fake_success": true,
+    "no_hardcoded_fallback": true,
+    "no_silent_fallback": true,
+    "preserve_public_behavior": true
+  },
   "expected_artifacts": [
     "refactor_plan",
     "patch_summary",
     "verification_report"
   ],
   "failure_semantics": {
-    "on_missing_evidence": "unsupported",
-    "on_gate_failure": "blocked",
-    "on_test_failure": "failed"
-  },
-  "execution_constraints": {
+    "explicit_failure_state": true,
     "no_fake_success": true,
     "no_silent_fallback": true,
-    "no_hardcoded_fallback": true,
-    "preserve_public_behavior": true
+    "on_gate_failure": "blocked",
+    "on_missing_evidence": "blocked",
+    "on_test_failure": "failed"
   },
+  "gates": [
+    {
+      "condition": "Public behavior boundaries and affected files are listed before edits.",
+      "gate_id": "scope_gate",
+      "on_failure": "blocked_missing_scope",
+      "on_pass": "continue_to_refactor"
+    },
+    {
+      "condition": "Relevant tests or equivalent checks pass after refactor.",
+      "gate_id": "verification_gate",
+      "on_failure": "failed_verification",
+      "on_pass": "release_patch"
+    }
+  ],
   "human_approval": {
-    "required": false,
-    "before": []
+    "before": [],
+    "required": false
   },
-  "unsupported_features": []
+  "objective": "Refactor software while preserving public behavior and explicit verification evidence.",
+  "required_agents": [
+    {
+      "agent_id": "refactor_planner",
+      "execution_spec": "Inspect source and tests before edits and block when behavior boundaries are unknown.",
+      "output_spec": "Scoped refactor plan with behavior inventory, file list, risks, and checks.",
+      "role_spec": "Identify behavior boundaries, affected files, risks, and required verification."
+    },
+    {
+      "agent_id": "verification_reviewer",
+      "execution_spec": "Run checks, inspect diff, and fail closed on missing or failed verification.",
+      "output_spec": "Verification report with commands, results, diff summary, and remaining risks.",
+      "role_spec": "Verify that behavior is preserved and success claims are supported."
+    }
+  ],
+  "required_evidence": [
+    "public_behavior_inventory",
+    "test_results",
+    "diff_summary"
+  ],
+  "required_tools": [
+    "source_reader",
+    "test_runner",
+    "diff_inspector"
+  ],
+  "schema_version": "0.1",
+  "task_type": "behavior-preserving-refactor",
+  "unsupported_features": [],
+  "verification_policy": {
+    "required_checks": [
+      "schema_v0_1",
+      "required_fields",
+      "gate_shape",
+      "failure_semantics",
+      "test_results"
+    ]
+  }
 }

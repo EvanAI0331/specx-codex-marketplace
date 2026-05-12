@@ -1,6 +1,7 @@
 import asyncio
 import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -11,7 +12,7 @@ if str(ROOT) not in sys.path:
 
 from scripts.specx_mcp import build_server
 
-VALID = ROOT / "examples" / "generic_research_contract.json"
+VALID = ROOT / "templates" / "research.contract.json"
 
 
 def run(coro):
@@ -36,8 +37,24 @@ class SpecXMcpTests(unittest.TestCase):
                 "specx.compile",
                 "specx.verify",
                 "specx.explain",
+                "specx.init",
             },
         )
+
+    def test_mcp_init_works(self):
+        server = build_server()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output = Path(tmpdir) / "specx.contract.json"
+            payload = tool_payload(
+                run(
+                    server.call_tool(
+                        "specx.init",
+                        {"template": "research", "output": str(output)},
+                    )
+                )
+            )
+            self.assertTrue(payload["ok"])
+            self.assertTrue(output.exists())
 
     def test_mcp_validate_returns_ok_true_for_valid_contract(self):
         server = build_server()
@@ -60,10 +77,16 @@ class SpecXMcpTests(unittest.TestCase):
         contract["execution_constraints"]["no_silent_fallback"] = False
         payload = tool_payload(run(server.call_tool("specx.verify", {"contract": contract})))
         self.assertFalse(payload["ok"])
-        self.assertIn(
-            "no_silent_fallback constraint missing or not true",
-            payload["details"],
-        )
+        self.assertEqual(payload["failure_state"], "failed_contract_verification")
+        self.assertTrue(payload["details"]["invalid_execution_constraints"])
+
+    def test_mcp_verify_fails_closed_on_invalid_contract(self):
+        server = build_server()
+        contract = json.loads(VALID.read_text(encoding="utf-8"))
+        contract.pop("required_agents")
+        payload = tool_payload(run(server.call_tool("specx.verify", {"contract": contract})))
+        self.assertFalse(payload["ok"])
+        self.assertIn("required_agents", payload["details"]["missing_fields"])
 
 
 if __name__ == "__main__":

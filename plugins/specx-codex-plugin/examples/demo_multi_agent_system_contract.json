@@ -1,85 +1,81 @@
 {
   "contract_id": "demo-multi-agent-system-001",
-  "version": "0.1.0",
-  "objective": "Run a multi-agent workflow through a contract-first runtime with verifier-enforced failure states.",
-  "domain": "multi-agent-governance",
-  "task_type": "contract-first-runtime",
-  "required_agents": [
-    {
-      "agent_id": "workflow_planner",
-      "role_spec": "Translate the user task into a governed execution plan with explicit roles, tools, evidence, gates, artifacts, and failure states.",
-      "execution_spec": "Compile the plan before any execution agent acts. Block if requirements are incomplete.",
-      "output_spec": "Execution plan with agent assignments, gate order, evidence requirements, and artifact contracts."
-    },
-    {
-      "agent_id": "execution_agent",
-      "role_spec": "Execute only the approved plan and only when required gates and evidence are satisfied.",
-      "execution_spec": "Run governed steps, produce artifacts, and stop when a gate fails or evidence is missing.",
-      "output_spec": "Step execution log, produced artifacts, gate results, and failure state if blocked or failed."
-    },
-    {
-      "agent_id": "verifier_agent",
-      "role_spec": "Verify gate results, evidence, artifact completeness, and failure semantics.",
-      "execution_spec": "Reject fake success, silent fallback, and uncontrolled agent execution.",
-      "output_spec": "Verifier report with pass/fail status, blocked reasons, and missing evidence."
-    }
-  ],
-  "required_tools": [
-    "contract_compiler",
-    "workflow_runner",
-    "gate_checker",
-    "artifact_inspector",
-    "test_runner"
-  ],
-  "required_evidence": [
-    "compiled_execution_plan",
-    "gate_results",
-    "evidence_bundle",
-    "artifact_index",
-    "verifier_report"
-  ],
-  "gates": [
-    {
-      "gate_id": "contract_gate",
-      "condition": "Execution plan exists and contains required agents, tools, evidence, gates, artifacts, and failure semantics.",
-      "on_failure": "blocked_missing_contract"
-    },
-    {
-      "gate_id": "execution_gate",
-      "condition": "Execution agent has required evidence and approved plan before acting.",
-      "on_failure": "blocked_uncontrolled_execution"
-    },
-    {
-      "gate_id": "verification_gate",
-      "condition": "Verifier confirms evidence, artifacts, and failure semantics before success.",
-      "on_failure": "failed_verification"
-    }
-  ],
+  "domain": "content-operations",
+  "execution_constraints": {
+    "approval_required_before_release": true,
+    "no_fake_success": true,
+    "no_hardcoded_fallback": true,
+    "no_silent_fallback": true
+  },
   "expected_artifacts": [
-    "execution_plan",
-    "gate_log",
-    "artifact_index",
-    "verifier_report"
+    "production_plan",
+    "draft_package",
+    "review_report",
+    "approved_output"
   ],
   "failure_semantics": {
-    "on_missing_contract": "blocked",
-    "on_missing_evidence": "blocked",
-    "on_gate_failure": "blocked",
-    "on_verification_failure": "failed",
-    "on_unsupported_capability": "unsupported"
-  },
-  "execution_constraints": {
+    "explicit_failure_state": true,
     "no_fake_success": true,
     "no_silent_fallback": true,
-    "no_hardcoded_fallback": true,
-    "contract_first_runtime": true,
-    "explicit_failure_state": true
+    "on_export_failure": "failed",
+    "on_gate_failure": "blocked",
+    "on_missing_evidence": "blocked"
   },
+  "gates": [
+    {
+      "condition": "Brief contains audience, constraints, and required outputs.",
+      "gate_id": "brief_gate",
+      "on_failure": "blocked_missing_brief",
+      "on_pass": "continue_to_draft"
+    },
+    {
+      "condition": "Reviewer approval is present before release.",
+      "gate_id": "approval_gate",
+      "on_failure": "blocked_unapproved_output",
+      "on_pass": "release_approved_output"
+    }
+  ],
   "human_approval": {
-    "required": true,
     "before": [
-      "external_side_effects"
-    ]
+      "release"
+    ],
+    "required": true
   },
-  "unsupported_features": []
+  "objective": "Run a content workflow with explicit planning, review, approval, and artifact gates.",
+  "required_agents": [
+    {
+      "agent_id": "content_planner",
+      "execution_spec": "Create a content plan before drafting and block on missing brief requirements.",
+      "output_spec": "Content plan with audience, constraints, artifacts, gates, and review criteria.",
+      "role_spec": "Define audience, constraints, production steps, and acceptance criteria."
+    },
+    {
+      "agent_id": "quality_reviewer",
+      "execution_spec": "Approve only when evidence, review notes, and artifacts satisfy gates.",
+      "output_spec": "Review report, approval state, blocked reasons, and missing evidence list.",
+      "role_spec": "Review claims, completeness, policy constraints, and approval readiness."
+    }
+  ],
+  "required_evidence": [
+    "content_brief",
+    "review_notes",
+    "approval_record"
+  ],
+  "required_tools": [
+    "draft_writer",
+    "review_checker",
+    "artifact_exporter"
+  ],
+  "schema_version": "0.1",
+  "task_type": "governed-content-pipeline",
+  "unsupported_features": [],
+  "verification_policy": {
+    "required_checks": [
+      "schema_v0_1",
+      "required_fields",
+      "gate_shape",
+      "failure_semantics",
+      "approval_record"
+    ]
+  }
 }

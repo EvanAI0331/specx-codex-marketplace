@@ -1,64 +1,80 @@
 {
   "contract_id": "generic-research-001",
-  "version": "0.1.0",
-  "objective": "Research a technical market and produce a decision packet.",
-  "domain": "technical-market-research",
-  "task_type": "research-decision-packet",
-  "required_agents": [
-    {
-      "agent_id": "research_planner",
-      "role_spec": "Define research scope, source criteria, and decision questions.",
-      "execution_spec": "Produce a source plan before collection starts.",
-      "output_spec": "Research plan with acceptance criteria."
-    },
-    {
-      "agent_id": "evidence_analyst",
-      "role_spec": "Analyze collected evidence and identify decision tradeoffs.",
-      "execution_spec": "Use only cited evidence and mark unsupported claims.",
-      "output_spec": "Evidence matrix and risk notes."
-    }
-  ],
-  "required_tools": [
-    "file_reader",
-    "web_research",
-    "citation_tracker"
-  ],
-  "required_evidence": [
-    "source_list",
-    "citation_map",
-    "risk_register"
-  ],
-  "gates": [
-    {
-      "gate_id": "source_quality_gate",
-      "condition": "At least three relevant sources are cited and mapped to claims.",
-      "on_failure": "block_with_missing_evidence"
-    },
-    {
-      "gate_id": "decision_packet_gate",
-      "condition": "Recommendation includes evidence, risk, and alternatives.",
-      "on_failure": "block_with_incomplete_artifact"
-    }
-  ],
+  "domain": "research",
+  "execution_constraints": {
+    "evidence_required_for_claims": true,
+    "no_fake_success": true,
+    "no_hardcoded_fallback": true,
+    "no_silent_fallback": true
+  },
   "expected_artifacts": [
     "research_plan",
     "evidence_matrix",
     "decision_packet"
   ],
   "failure_semantics": {
-    "on_missing_evidence": "unsupported",
-    "on_gate_failure": "blocked",
-    "on_tool_failure": "failed"
-  },
-  "execution_constraints": {
+    "explicit_failure_state": true,
     "no_fake_success": true,
     "no_silent_fallback": true,
-    "no_hardcoded_fallback": true,
-    "evidence_required_for_claims": true
+    "on_gate_failure": "blocked",
+    "on_missing_evidence": "blocked",
+    "on_tool_failure": "failed"
   },
+  "gates": [
+    {
+      "condition": "Sources are listed and mapped to material claims.",
+      "gate_id": "source_gate",
+      "on_failure": "blocked_missing_sources",
+      "on_pass": "continue_to_analysis"
+    },
+    {
+      "condition": "Decision packet includes evidence, risks, and unsupported claims.",
+      "gate_id": "decision_packet_gate",
+      "on_failure": "blocked_incomplete_decision_packet",
+      "on_pass": "release_decision_packet"
+    }
+  ],
   "human_approval": {
-    "required": true,
-    "before": ["final_decision_release"]
+    "before": [
+      "final_decision_release"
+    ],
+    "required": true
   },
-  "unsupported_features": []
+  "objective": "Research a question and produce an evidence-bound decision packet.",
+  "required_agents": [
+    {
+      "agent_id": "research_planner",
+      "execution_spec": "Create a source plan before evidence collection and block when the scope is incomplete.",
+      "output_spec": "Research plan with scope, source criteria, evidence requirements, and acceptance gates.",
+      "role_spec": "Define research scope, source criteria, and decision questions."
+    },
+    {
+      "agent_id": "evidence_reviewer",
+      "execution_spec": "Map material claims to evidence and fail closed when evidence is missing.",
+      "output_spec": "Evidence matrix, unsupported claim list, risk notes, and decision packet.",
+      "role_spec": "Review claims against collected evidence and identify unsupported claims."
+    }
+  ],
+  "required_evidence": [
+    "source_list",
+    "claim_to_source_map",
+    "risk_register"
+  ],
+  "required_tools": [
+    "source_reader",
+    "citation_tracker",
+    "artifact_writer"
+  ],
+  "schema_version": "0.1",
+  "task_type": "evidence-bound-research",
+  "unsupported_features": [],
+  "verification_policy": {
+    "required_checks": [
+      "schema_v0_1",
+      "required_fields",
+      "gate_shape",
+      "failure_semantics",
+      "evidence_mapping"
+    ]
+  }
 }

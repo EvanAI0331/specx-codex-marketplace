@@ -17,7 +17,7 @@ codex plugin marketplace add BTCNAI/specx-codex-marketplace
 Or pin the stable release:
 
 ```bash
-codex plugin marketplace add https://github.com/BTCNAI/specx-codex-marketplace.git --ref v0.2.2
+codex plugin marketplace add https://github.com/BTCNAI/specx-codex-marketplace.git --ref v0.3.0
 ```
 
 ## What It Provides
@@ -42,9 +42,12 @@ Included skills:
 Included CLI:
 
 ```bash
+python3 scripts/specx_cli.py init --template research --output ./specx.contract.json
+python3 scripts/specx_cli.py init --template software_refactor --output ./specx.contract.json
+python3 scripts/specx_cli.py init --template content_pipeline --output ./specx.contract.json
+python3 scripts/specx_cli.py verify ./specx.contract.json
 python3 scripts/specx_cli.py validate examples/demo_software_engineering_contract.json
 python3 scripts/specx_cli.py compile examples/demo_software_engineering_contract.json
-python3 scripts/specx_cli.py verify examples/demo_software_engineering_contract.json
 python3 scripts/specx_cli.py explain examples/demo_software_engineering_contract.json
 ```
 
@@ -54,6 +57,7 @@ Included MCP tools:
 - `specx.compile`
 - `specx.verify`
 - `specx.explain`
+- `specx.init`
 
 Install MCP runtime dependencies before running MCP tools:
 
@@ -65,16 +69,24 @@ python3 -m pip install -r requirements.txt
 
 Every valid contract must define:
 
+- `contract_id`
+- `schema_version: "0.1"`
+- `objective`
+- `domain`
+- `task_type`
 - `required_agents`
 - `required_tools`
 - `required_evidence`
 - `gates`
 - `expected_artifacts`
 - `failure_semantics`
-- `execution_constraints.no_fake_success`
-- `execution_constraints.no_silent_fallback`
+- `execution_constraints`
+- `human_approval`
+- `verification_policy.required_checks`
 
-If required evidence, tools, specs, gates, or artifacts are missing, the workflow must return `blocked`, `failed`, or `unsupported`. It must not claim success.
+Each gate must include `gate_id`, `condition`, `on_pass`, and `on_failure`. `failure_semantics` must include `no_fake_success`, `no_silent_fallback`, and `explicit_failure_state`.
+
+If required evidence, tools, specs, gates, artifacts, or verification policy are missing, the workflow must return `ok=false` with `failure_state` and `details`. It must not claim success.
 
 ## Demos
 
@@ -103,12 +115,14 @@ Demo 3: Multi-agent system
 - `docs/use-cases.md`
 - `docs/comparison.md`
 - `docs/mcp-tools.md`
+- `docs/contract-schema-v0.1.md`
+- `docs/cli.md`
 
 ## Roadmap
 
 P0:
 
-- Contract schema v0.1 hardening.
+- Contract schema v0.1 adoption feedback.
 - MCP integration tests against real Codex marketplace install.
 
 P1:
@@ -127,6 +141,7 @@ specx-codex-plugin/
 ├── skills/
 ├── scripts/
 ├── schemas/
+├── templates/
 ├── examples/
 ├── tests/
 ├── README.md

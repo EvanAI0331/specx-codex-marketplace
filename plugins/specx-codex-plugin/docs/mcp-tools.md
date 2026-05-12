@@ -6,8 +6,9 @@ SpecX exposes four MCP tools:
 - `specx.compile`
 - `specx.verify`
 - `specx.explain`
+- `specx.init`
 
-Each tool accepts a SpecX contract JSON object as `contract`.
+Contract tools accept a SpecX contract JSON object as `contract`. `specx.init` accepts `template` and `output`.
 
 ## Local Server
 
@@ -42,7 +43,7 @@ The MCP config starts the stdio server:
 
 ### specx.validate
 
-Validates required fields and array/object shapes. It does not execute the workflow.
+Validates Contract Schema v0.1 required fields, gate shape, failure semantics, execution constraints, and verification policy. It does not execute the workflow.
 
 ### specx.compile
 
@@ -52,6 +53,10 @@ Compiles a valid contract into a governed execution plan with agents, tools, evi
 
 Fails closed when gates, expected artifacts, required agents, required tools, or `no_fake_success` / `no_silent_fallback` constraints are missing.
 
+### specx.init
+
+Creates a verified Contract Schema v0.1 skeleton from `research`, `software_refactor`, or `content_pipeline`.
+
 ### specx.explain
 
 Returns a compact explanation with objective summary, domain, task type, counts, risk notes, and unsupported features.
@@ -59,3 +64,5 @@ Returns a compact explanation with objective summary, domain, task type, counts,
 ## Failure Boundary
 
 If the MCP runtime is not installed, `scripts/launch_specx_mcp.py` exits non-zero and prints the missing-runtime error. It does not claim that MCP tools are available.
+
+CLI and MCP tools use the same implementation. MCP cannot return a success state that the CLI would reject.
