@@ -1,0 +1,22 @@
+{
+  "name": "specx-codex-plugin",
+  "interface": {
+    "displayName": "SpecX Codex Marketplace"
+  },
+  "plugins": [
+    {
+      "name": "specx-codex-plugin",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/BTCNAI/specx-codex-marketplace.git",
+        "path": "./plugins/specx-codex-plugin",
+        "ref": "v0.4.0"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

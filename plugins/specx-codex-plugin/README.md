@@ -1,5 +1,8 @@
 # SpecX Codex Plugin
 
+Official Codex Plugin Directory publishing is not yet self-serve.
+SpecX is currently distributed through a GitHub-backed Codex marketplace.
+
 SpecX turns vague agent tasks into governed execution contracts.
 It enforces required agents, tools, evidence, gates, artifacts, and failure semantics.
 It prevents fake success, silent fallback, and uncontrolled agent execution.
@@ -8,17 +11,11 @@ SpecX is a governance layer for Codex agents.
 
 ## Install
 
-Install from the marketplace repository:
-
-```bash
-codex plugin marketplace add BTCNAI/specx-codex-marketplace
-```
-
-Or pin the stable release:
-
 ```bash
 codex plugin marketplace add https://github.com/BTCNAI/specx-codex-marketplace.git --ref v0.4.0
 ```
+
+The official Codex directory will be used after OpenAI opens self-serve publishing.
 
 ## What It Provides
 
