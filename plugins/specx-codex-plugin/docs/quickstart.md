@@ -5,7 +5,7 @@ SpecX is a governance layer for Codex agents.
 ## Install
 
 ```bash
-codex plugin marketplace add https://github.com/BTCNAI/specx-codex-marketplace.git --ref v0.4.0
+codex plugin marketplace add https://github.com/EvanAI0331/specx-codex-marketplace.git --ref v0.4.0
 ```
 
 ## Initialize A Contract

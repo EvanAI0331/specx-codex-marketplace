@@ -6,7 +6,7 @@ SpecX is currently distributed through this GitHub-backed Codex marketplace.
 ## Install
 
 ```bash
-codex plugin marketplace add https://github.com/BTCNAI/specx-codex-marketplace.git --ref v0.4.0
+codex plugin marketplace add https://github.com/EvanAI0331/specx-codex-marketplace.git --ref v0.4.0
 ```
 
 ## Included Plugin
